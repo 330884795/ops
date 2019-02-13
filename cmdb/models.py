@@ -8,6 +8,11 @@ class project(models.Model):
     pro_platform = models.CharField(max_length=20)
     pro_conf = models.CharField(max_length=100)
     pro_url = models.CharField(max_length=200)
+    pro_rsync = models.CharField(max_length=200)
+    pro_setup = models.CharField(max_length=200)
+    pro_software = models.CharField(max_length=100)
+    pro_port = models.CharField(max_length=20)
+
 
     def __str__(self):
         return self.pro_name

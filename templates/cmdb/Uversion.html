@@ -76,7 +76,10 @@ code {
 <main role="main" class="flex-shrink-0">
   <div class="container">
     <h1 class="mt-5">保证项目的脚本都是存在的！</h1>
-    <p class="lead">保证每台服务器的rsync.sh tomcat.sh存在  以及监活url的正确性 </p>
+    <p class="lead">后端执行操作</p>
+      <p class="text-primary">1.如果有conf配置,先注释conf中的操作机器ip</p>
+      <p class="text-primary">2.调用rsync.sh脚本 重启脚本,根据项目url来判断服务是否启动</p>
+      <p class="text-primary">3.如果请求的url返回200则认为启动成功 打开注释 进行下一台,否则认为失败 并报错</p>
      <div id="vuetest">
     <label>应用</label>
   <select v-model="selected" class="form-control" name="service" v-on:change="blue">
