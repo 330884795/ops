@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="2948964f-12d7-42d4-8e4d-6e669077c8c7" name="王月vpc" url="http://47.110.245.93">
+        <fileTransfer host="47.110.245.93" port="22" rootFolder="/home/wangyue/ops" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

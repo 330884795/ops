@@ -14,7 +14,7 @@ from ansible.plugins.callback import CallbackBase
 import ansible.constants as C
 
 
-mongoinfo = {"host":"10.25.233.225","port":"27017","user":"ansible","password":"ansible","dbname":"ansible"}
+mongoinfo = {"host":"dds-bp11e38d33b092a41.mongodb.rds.aliyuncs.com","port":"3717","user":"ansible","password":"ansible","dbname":"ansible"}
 TIME_FORMAT='%Y-%m-%d %H:%M:%S'
 
 def InsertDB(values):
@@ -24,7 +24,7 @@ def InsertDB(values):
     dbuser = mongoinfo['user']
     dbpwd  = mongoinfo['password']
     dbname = mongoinfo['dbname']
-    uri = 'mongodb://%s:%s@%s/%s'%(dbuser,dbpwd,dbhost,dbname)
+    uri = 'mongodb://%s:%s@%s:%s/%s'%(dbuser,dbpwd,dbhost,dbport,dbname)
     client = MongoClient(uri)
     db = client.ansible
     db.testnginx.insert_one(values)
@@ -83,7 +83,7 @@ results_callback = ResultCallback()
 
 # create play with tasks
 def newtasks(hosts_file,host,command):
-    inventory = InventoryManager(loader=loader, sources=['/etc/ansible/'+hosts_file])
+    inventory = InventoryManager(loader=loader, sources=hosts_file)
     variable_manager = VariableManager(loader=loader, inventory=inventory)
     play_source =  dict(
         name = "Ansible Play",
