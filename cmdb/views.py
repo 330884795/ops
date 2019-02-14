@@ -7,6 +7,7 @@ import threading
 import datetime,time
 import pika
 import requests
+from django.db.models import Q
 from queue import Queue
 
 rabbithost='172.22.0.69'
@@ -28,7 +29,10 @@ def ConsumerCallback (channel, method, properties, body):
     print(type(str(body,encoding = "utf-8")))
     Service=eval(str(body,encoding = "utf-8"))
     get_host_info = project.objects.get(pro_name=Service['service'])
-    ServiceList = [i.ip for i in get_host_info.ecslist_set.all()]
+    if Service['action'] == 'update':
+        ServiceList = [i.ip for i in get_host_info.ecslist_set.filter(~Q(platform='source'))]
+    elif Service['action'] == 'reboot':
+        ServiceList = [i.ip for i in get_host_info.ecslist_set.all()]
     #添加一个sql语句
     #db[service]=Service,在记录一个时间字段  方便后边线程更新 操作的记录.
     for i in ServiceList:
@@ -96,7 +100,7 @@ class MyThread(threading.Thread):
                             r = requests.get(service_info[service]['url'], timeout=0.5)
                         print('请求检测后 + 状态码:'+ str(r.status_code))
                         if r.status_code in [200,302]:
-                            if service_info[service]['conf'] != str(0):
+                            if service_info[service]['conf']:
                                 newtasks('/etc/ansible/nginx-hosts', '172.17.0.63',
                                          "sed -i '/" + i + "/s!#!!1' /usr/local/nginx/conf/conf.d/" +
                                          service_info[service]['conf'])
@@ -113,7 +117,7 @@ class MyThread(threading.Thread):
                         print('调用服务失败,等待7秒后发起下一次调用')
                         time.sleep(7)
 
-            if service_info[service]['conf'] != str(0):
+            if service_info[service]['conf']:
                 info = screen()
                 print('有配置文件')
                 if '#' in info['stdout']:
@@ -180,7 +184,10 @@ def getservicelist(request):
     print(request.GET)
     print(request.GET['service'])
     pro = project.objects.get(pro_name=request.GET['service'])
-    ecs_list = [i.ip for i in pro.ecslist_set.all()]
+    if request.GET['action'] == 'update':
+        ecs_list = [i.ip for i in pro.ecslist_set.filter(~Q(platform='source'))]
+    else:
+        ecs_list = [i.ip for i in pro.ecslist_set.all()]
     t={}
     t['data'] = ecs_list
     #return HttpResponse('1.1.1.1')

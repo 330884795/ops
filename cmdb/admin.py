@@ -9,7 +9,7 @@ class projectAdmin(admin.ModelAdmin):
     list_display = ('pro_name','pro_platform','pro_conf')
 
 class ecslistAdmin(admin.ModelAdmin):
-    list_display = ('ip','cpu','mem','project_name')
+    list_display = ('ip','cpu','mem','project_name','platform')
 
 
 admin.site.register(models.project,projectAdmin)

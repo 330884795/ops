@@ -5,14 +5,14 @@ from django.db import models
 
 class project(models.Model):
     pro_name = models.CharField(max_length=20,)
-    pro_platform = models.CharField(max_length=20,null=True)
-    pro_conf = models.CharField(max_length=100,null=True)
+    pro_platform = models.CharField(max_length=20,null=True,blank=True)
+    pro_conf = models.CharField(max_length=100,null=True,blank=True)
     pro_url = models.CharField(max_length=200)
     pro_rsync = models.CharField(max_length=200)
     pro_setup = models.CharField(max_length=200)
-    pro_software = models.CharField(max_length=100,null=True)
+    pro_software = models.CharField(max_length=100,null=True,blank=True)
     pro_port = models.CharField(max_length=20)
-    pro_action = models.CharField(max_length=20,null=True)
+    pro_action = models.CharField(max_length=20,null=True,blank=True)
 
 
     def __str__(self):
@@ -23,8 +23,8 @@ class ecslist(models.Model):
     ip = models.CharField(max_length=70)
     cpu = models.CharField(max_length=10)
     mem = models.CharField(max_length=10)
-    inst_id = models.CharField(max_length=20,null=True)
-    platform = models.CharField(max_length=5,null=True)
+    inst_id = models.CharField(max_length=20,null=True,blank=True)
+    platform = models.CharField(max_length=20,null=True,blank=True)
     ecs_project = models.ManyToManyField(project)
 
     def __str__(self):

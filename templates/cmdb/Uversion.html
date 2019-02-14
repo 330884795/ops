@@ -59,7 +59,7 @@ code {
           <a class="nav-link" href="{% url 'cmdb:uv' %}">发版 </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#"></a>
+          <a class="nav-link" href="{% url 'monitor:jilu' %}">监控记录</a>
         </li>
         <li class="nav-item">
           <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"></a>
@@ -83,14 +83,14 @@ code {
       <p class="text-primary">3.如果请求的url返回200则认为启动成功 打开注释 进行下一台,否则认为失败 并报错</p>
      <div id="vuetest">
     <label>应用</label>
-  <select v-model="selected" class="form-control" name="service" v-on:change="blue">
+  <select v-model="selected" class="form-control" name="service" >
       <option v-for="option in options" v-bind:value="option" v-html="option">
       </option>
   </select>
 
     <br>
     <label>操作类型</label>
-  <select v-model="meth" class="form-control" name="action">
+  <select v-model="meth" class="form-control" name="action" v-on:change="blue">
         <option v-for="me in methodinfo" v-bind:value="me.value" v-html="me.text"></option>
   </select>
     <br>
@@ -129,8 +129,8 @@ code {
                 testpro:function (){ console.log(a.options)},
 
                 blue:function () {
-                    console.log('/cmdb/getservicelist/?service='+this.selected),
-                axios.get('/cmdb/getservicelist/?service='+this.selected
+                    console.log('/cmdb/getservicelist/?service='+this.selected+'&action='+this.meth),
+                axios.get('/cmdb/getservicelist/?service='+this.selected+'&action='+this.meth
                 ).then(function (response){
                     c=document.getElementById('new')
                     c.innerHTML = response.data['data']
