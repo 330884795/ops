@@ -19,5 +19,5 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('cmdb/',include('cmdb.urls')),
+    path('cmdb/',include('cmdb.urls',namespace='cmdb')),
 ]

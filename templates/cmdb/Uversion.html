@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en" class="h-100">
 {% load bootstrap4 %}
+
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 
@@ -55,7 +56,7 @@ code {
     <div class="collapse navbar-collapse" id="navbarCollapse">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="/cmdb/update">发版 <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{% url 'cmdb:uv' %}">发版 </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#"></a>

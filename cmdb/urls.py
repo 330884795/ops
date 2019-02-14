@@ -3,6 +3,8 @@ from django.urls import path
 from . import views
 
 
+app_name = 'cmdb'
+
 urlpatterns = [
     path('', views.index,name='index'),
     path('update/', views.uv,name='uv'),
