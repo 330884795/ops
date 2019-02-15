@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from .models import project,ecslist
+from monitor.models import record
 from .updateadhoc import newtasks
 from pymongo import MongoClient
 import threading
@@ -108,11 +109,27 @@ class MyThread(threading.Thread):
                                          '/usr/local/nginx/sbin/nginx -s reload')
                                 print('打开文件注释')
                                 newtasks('/etc/ansible/other-hosts', 'all', 'sh /root/shell/rsync-nginx.sh')
-
+                            if action == 'update':
+                                arecord=record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),user='update',cmd='succ',
+                                               stdout=i+' '+num+' '+service)
+                                arecord.save()
+                            else:
+                                arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                                 user='reboot', cmd='succ',
+                                                 stdout=i + ' ' + num + ' ' + service)
+                                arecord.save()
                             print("服务判断启动成功")
                             break
                         elif tt == 19:
                             print('19次还没有成功')
+                            if action == 'update':
+                                arecord=record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),user='update',cmd='succ',
+                                               stdout=i+' '+num+' '+service+' 服务启动失败')
+                                arecord.save()
+                            else:
+                                arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                                 user='reboot', cmd='succ',
+                                                 stdout=i + ' ' + num + ' ' + service+' 服务启动失败')
                     except:
                         print('调用服务失败,等待7秒后发起下一次调用')
                         time.sleep(7)
@@ -124,6 +141,16 @@ class MyThread(threading.Thread):
                     print('检测注释是否成功')
                     sync_version(i,filename,service,action)
                 else:
+                    if action == 'update':
+                        arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                     user='update', cmd='failed',
+                                     stdout=i + ' ' + num + ' ' + service+' 配置文件注释失败')
+                        arecord.save()
+                    else:
+                        arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                         user='reboot', cmd='succ',
+                                         stdout=i + ' ' + num + ' ' + service+' 配置文件注释失败')
+                        arecord.save()
                     print('注释有问题')
             else:
                 print("无配置文件")
@@ -161,6 +188,13 @@ def testinfo(request):
     channel.basic_publish(exchange='', routing_key='yunwei-uV', body=mqinfo)
     print('消息发送到rabbit:{}'.format(mqinfo))
     connection.close()
+    if request.GET['action'] == 'update':
+        arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user='用户', cmd='提交更新服务:'+request.GET['service'],stdout='请求后端已经在处理.')
+        arecord.save()
+    else:
+        arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user='用户',
+                         cmd='提交重启服务:' + request.GET['service'], stdout='请求后端已经在处理.')
+        arecord.save()
 
 
     return HttpResponse('嘻嘻')

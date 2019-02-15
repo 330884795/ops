@@ -25,7 +25,7 @@ SECRET_KEY = 'jmigexn!efomnp!h53ff%%q*_zb+m-h9m0w7w^**pzfa)7oobn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['47.110.245.93',]
 
 
 # Application definition
@@ -37,10 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'bootstrap4',
     'cmdb',
     'monitor',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
 ]
+SITE_IDSITE_ID = 1
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

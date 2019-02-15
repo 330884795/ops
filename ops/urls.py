@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('cmdb/',include('cmdb.urls',namespace='cmdb')),
     path('monitor/',include('monitor.urls',namespace='monitor')),
+    path('accounts/',include('allauth.urls')),
 ]
