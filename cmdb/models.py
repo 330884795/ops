@@ -4,9 +4,9 @@ from django.db import models
 
 
 class project(models.Model):
-    pro_name = models.CharField(max_length=20,)
+    pro_name = models.CharField(max_length=100,)
     pro_platform = models.CharField(max_length=20,null=True,blank=True)
-    pro_conf = models.CharField(max_length=100,null=True,blank=True)
+    pro_conf = models.CharField(max_length=200,null=True,blank=True)
     pro_url = models.CharField(max_length=200)
     pro_rsync = models.CharField(max_length=200)
     pro_setup = models.CharField(max_length=200)

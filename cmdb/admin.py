@@ -10,6 +10,7 @@ class projectAdmin(admin.ModelAdmin):
 
 class ecslistAdmin(admin.ModelAdmin):
     list_display = ('ip','cpu','mem','project_name','platform')
+    filter_horizontal=('ecs_project',)
 
 
 admin.site.register(models.project,projectAdmin)

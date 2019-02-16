@@ -4,5 +4,5 @@ from .models import record
 
 
 def jilu(request):
-    a=record.objects.all()
+    a=record.objects.all().order_by('-date')
     return render(request,'monitor/Record.html',{'info':a})
