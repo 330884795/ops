@@ -142,7 +142,7 @@ code {
                     axios.get('/cmdb/testinfo/?service='+this.selected+'&action='+this.meth).
                     then(function (response) {
                         console.log(response.data);
-                        alert('提交成功,具体更新进度,请查看操作记录')
+                        alert(response.data)
 
                 })
 

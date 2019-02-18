@@ -71,8 +71,12 @@ class MyThread(threading.Thread):
                          'cat /usr/local/nginx/conf/conf.d/' + service_info[service]['conf'] + ' | grep ' + i)
                 c = db.testnginx.find({'$and': [{"ip": '172.17.0.64'}, {"time": {"$gt": thismoment}}, ]})
                 print(c)
-                cc = c.next()
-                print("check hosts:{}".format(cc))
+                try:
+                    cc = c.next()
+                    print("check hosts:{}".format(cc))
+                except:
+                    cc='error'
+                    return cc
                 return cc
             def open_screen(output):
                 if '#' in output['stdout']:
@@ -99,6 +103,7 @@ class MyThread(threading.Thread):
                             r = requests.post(service_info[service]['url'], timeout=0.5)
                         else:
                             r = requests.get(service_info[service]['url'], timeout=0.5)
+
                         print('请求检测后 + 状态码:'+ str(r.status_code))
                         if r.status_code in [200,302]:
                             if service_info[service]['conf']:
@@ -175,6 +180,10 @@ def testinfo(request):
     service = project.objects.get(pro_name=request.GET['service'])
     hosts_list = [i.ip for i in service.ecslist_set.all()]
     print(hosts_list)
+    try:
+        requests.get(service.pro_url.replace('ip:port',hosts_list[0]+':'+service.pro_port))
+    except:
+        return HttpResponse('项目url有问题 请更换后重新提交')
     filetime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     with open(filetime+'-hosts','wt') as hostsfile:
         for i in hosts_list:
@@ -197,7 +206,7 @@ def testinfo(request):
         arecord.save()
 
 
-    return HttpResponse('嘻嘻')
+    return HttpResponse('提交成功,具体更新进度,请查看操作记录')
 
 def rabbit1(request):
     connection = pika.BlockingConnection(pika.ConnectionParameters(rabbithost, credentials=rabbitinfo))
@@ -235,4 +244,7 @@ def getprojectlist(request):
     # return HttpResponse(jsonify(a))
     return JsonResponse(t)
 
+
+def initservice(request):
+    return render(request,'cmdb/servceinit.html')
 

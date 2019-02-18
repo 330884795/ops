@@ -7,4 +7,6 @@ app_name = 'monitor'
 
 urlpatterns = [
     path('record/',views.jilu,name='jilu'),
+    path('tmtest/',views.tmtest,name='tmtest'),
+
 ]

@@ -6,3 +6,6 @@ from .models import record
 def jilu(request):
     a=record.objects.all().order_by('-date')
     return render(request,'monitor/Record.html',{'info':a})
+
+def tmtest(request):
+    return render(request,'monitor/test.html')
