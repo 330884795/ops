@@ -66,7 +66,7 @@ class MyThread(threading.Thread):
                 newtasks('/etc/ansible/nginx-hosts', '172.17.0.63', '/usr/local/nginx/sbin/nginx -s reload')
                 newtasks('/etc/ansible/other-hosts', 'all', 'sh /root/shell/rsync-nginx.sh')
                 thismoment = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                time.sleep(0.3)
+                time.sleep(1)
                 newtasks('/etc/ansible/other-hosts', '172.17.0.64',
                          'cat /usr/local/nginx/conf/conf.d/' + service_info[service]['conf'] + ' | grep ' + i)
                 c = db.testnginx.find({'$and': [{"ip": '172.17.0.64'}, {"time": {"$gt": thismoment}}, ]})
@@ -79,7 +79,7 @@ class MyThread(threading.Thread):
                     return cc
                 return cc
             def open_screen(output):
-                if '#' in output['stdout']:
+                if '#' in str(output['stdout']):
                     newtasks('/etc/ansible/nginx-hosts', '172.17.0.63',
                          "sed -i '/" + i + "/s!#!!1' /usr/local/nginx/conf/conf.d/" + service_info[service]['conf'])
                     newtasks('/etc/ansible/nginx-hosts', '172.17.0.63', '/usr/local/nginx/sbin/nginx -s reload')
@@ -93,7 +93,8 @@ class MyThread(threading.Thread):
                     print('更新服务')
                     newtasks(filename, i, 'sh '+service_info[service]['rsync'])
                 print('重启服务前')
-                newtasks(filename, i, 'nohup sh '+service_info[service]['setup']+' f-restart')
+                newtasks(filename, i, 'nohup '+service_info[service]['setup']+' f-restart')
+                print('nohup '+service_info[service]['setup']+' f-restart')
                 print('重启服务后')
 
                 for tt in range(20):
@@ -142,7 +143,8 @@ class MyThread(threading.Thread):
             if service_info[service]['conf']:
                 info = screen()
                 print('有配置文件')
-                if '#' in info['stdout']:
+                print(info['stdout'])
+                if '#' in str(info['stdout']):
                     print('检测注释是否成功')
                     sync_version(i,filename,service,action)
                 else:
@@ -246,5 +248,13 @@ def getprojectlist(request):
 
 
 def initservice(request):
-    return render(request,'cmdb/servceinit.html')
+    if request.method == 'GET':
+        return render(request,'cmdb/servceinit.html')
+    else:
+        servicelist = request.POST.getlist('chename')
+        ip = request.POST.get('address')
+
+
+        print(servicelist,ip)
+        return HttpResponse('嘻嘻')
 

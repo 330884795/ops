@@ -1,4 +1,5 @@
 from django.shortcuts import render
+#from django.views.generic import
 from .models import record
 # Create your views here.
 
