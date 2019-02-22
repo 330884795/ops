@@ -19,7 +19,7 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('cmdb/',include('cmdb.urls',namespace='cmdb')),
+ #   path('cmdb/',include('cmdb.urls',namespace='cmdb')),
     path('monitor/',include('monitor.urls',namespace='monitor')),
     path('accounts/',include('allauth.urls')),
     path('manager_redis/',include('manager_redis.urls')),

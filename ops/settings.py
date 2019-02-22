@@ -29,7 +29,7 @@ SECRET_KEY = 'jmigexn!efomnp!h53ff%%q*_zb+m-h9m0w7w^**pzfa)7oobn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['47.110.245.93',]
+ALLOWED_HOSTS = ['47.110.245.93','127.0.0.1']
 
 
 # Application definition
@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'bootstrap4',
-    'cmdb',
+    #'cmdb',
     'monitor',
     'allauth',
     'allauth.account',

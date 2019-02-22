@@ -8,6 +8,7 @@ def getredislist(request):
     ip=request.POST.get('host')
     #print(ip)
     command=request.POST.get('command')
+    print(command)
     key=request.POST.get('key')
     value=request.POST.get('value')
     conn = redis.Redis(host=ip, port=6379, decode_responses=True)
