@@ -1,10 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!doctype html>
+<html lang="en" class="h-100">
+{% load bootstrap4 %}
 
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+
+        main > .container {
+            padding: 60px 15px 0;
+        }
+
+        .footer {
+            background-color: #f5f5f5;
+        }
+
+        .footer > .container {
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        code {
+            font-size: 80%;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body style="padding: 50px;background-color: #ccc;">
+<header>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="#">智慧树redis操作中心</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+    </nav>
+</header>
+<br/>
+<br/>
+<br/>
+<div class="container" style="padding:50px;background-color:#fff;">
+
+    <form class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="col-md-2 control-label" for="host">redis_host:</label>
+            <div class="col-md-11">
+            <select class="col-md-4 " name="host" id="host" class="form-control">
+                {% for host in hosts %}
+                    <option value="{{ host }}">{{ host }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        </div>
+        <div class="form-group">  <!-- form-group代表分组的意思  把label与input分成一组  -->
+            <label class="col-md-2 control-label" for="username">Command:</label>
+            <!--control-label控制label与input之间的距离  for的作用是将username与input中的username绑定在一起，你正在点击用户名的时候，input输入框获得焦点   -->
+            <div class="col-md-4"><!-- 加div进行设置input的栅格  -->
+                <input type="text" name='command' id="username" class="form-control" placeholder="请输入命令" maxlength="30">
+                <!-- form-control  控制input输入框的显示  -->
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label" for="key">Key:</label>
+            <div class="col-md-4">
+                <input type="text" name='key' id="key" class="form-control" placeholder="请输入key">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label" for="">Value:</label>
+            <div class="col-md-4">
+                <input type="text" name='' id="value" class="form-control" placeholder="请输入value">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label" for="resume">执行结果:</label>
+            <div class="col-md-4">
+                <textarea rows="5" class="form-control" id="resume" placeholder="结果信息" value="jieguo">{{ jieguo }}</textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 col-md-offset-2 ">
+                <button class=" btn btn-success btn-block">执行</button>
+            </div>
+            <div class="col-md-2  col-md-offset-2 ">
+                <button class=" btn btn-success btn-block">取消</button>
+            </div>
+        </div>
+    </form>
+</div>
 </body>
 </html>
