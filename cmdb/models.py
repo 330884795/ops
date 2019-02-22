@@ -32,3 +32,9 @@ class ecslist(models.Model):
 
     def project_name(self):
         return "\n".join([p.pro_name for p in self.ecs_project.all()])
+
+class urlinfo(models.Model):
+    manager = models.CharField(max_length=100)
+    project = models.CharField(max_length=100)
+    url = models.CharField(max_length=500)
+    urlinfo = models.CharField(max_length=100)

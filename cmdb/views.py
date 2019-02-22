@@ -3,6 +3,7 @@ from django.http import HttpResponse,JsonResponse
 from .models import project,ecslist
 from monitor.models import record
 from .updateadhoc import newtasks
+from .adplaybook import tasksbook
 from pymongo import MongoClient
 import threading
 import datetime,time
@@ -249,12 +250,35 @@ def getprojectlist(request):
 
 def initservice(request):
     if request.method == 'GET':
-        return render(request,'cmdb/servceinit.html')
+        info=None
+        return render(request,'cmdb/servceinit.html',info)
     else:
         servicelist = request.POST.getlist('chename')
-        ip = request.POST.get('address')
+        ip = request.POST.get('address').split(' ')
+        print([i for i in ip])
+        thismoment = (datetime.datetime.now() - datetime.timedelta(seconds=1)).strftime('%Y-%m-%d %H:%M:%S')
+        filetime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        with open(filetime + '-hosts', 'wt') as hostsfile:
+            for i in ip:
+                hostsfile.write(i + ' ansible_ssh_user=root ansible_ssh_pass="Vpcecs@2018!q@w#" ansible_ssh_port=22' + '\n')
 
-
+        with open(filetime+'pytest.yml','wt') as task:
+            task.write('---'+'\n')
+            task.write('- hosts: all'+'\n')
+            task.write('  gather_facts: true'+'\n')
+            task.write('  roles: '+'\n')
+            for yy in servicelist:
+                task.write('     - '+yy+'\n')
+        # tasksbook(filetime + 'pytest.yml', filetime + '-hosts')
+        #         #
+        #         # coll = db.newplaybook
+        #         # cc = coll.find({"time": {"$gt": thismoment}})
+        #         # c = []
+        #         # for i in cc:
+        #         #     c.append(i)
+        # info={}
+        # info={'ip':'1.1.1.1','cmd':'test','succ_info':'ok','status':'ok'}
+        #info=info[0]['ip'], info[0]['cmd'], info[0]['succ_info'], info[0]['status']
         print(servicelist,ip)
-        return HttpResponse('嘻嘻')
+        return render(request,'cmdb/servceinit.html',{"info":"qweqwe"})
 
