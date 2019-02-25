@@ -6,12 +6,13 @@ from django.forms import ModelChoiceField
 def getredislist(request):
     hosts = redismessage.objects.values_list('host',flat=True)
     ip=request.POST.get('host')
-    #print(ip)
+    print(ip)
+    passw=chamima(ip)
     command=request.POST.get('command')
     print(command)
     key=request.POST.get('key')
     value=request.POST.get('value')
-    conn = redis.Redis(host=ip, port=6379, decode_responses=True)
+    conn = redis.Redis(host=ip, port=6379,password=passw,decode_responses=True)
     jieguo='redis叉叉叉'
     try:
         if command == 'get':
@@ -56,13 +57,23 @@ def getredislist(request):
             k = key.split()
             print(k[0], k[1], k[2])
             jieguo=conn.zrange(k[0],int(k[1]),int(k[2]))
-    except:
-        print ('语法错误')
-        return render(request, 'manager_redis/error.html')
+    except Exception  as error:
+        print (error)
+
+        return render(request, 'manager_redis/error.html',{'error':error})
     else:
     #print(jieguo)
         return  render(request,'manager_redis/manager_redis.html',{'hosts': hosts,'jieguo':jieguo})
-
+def chamima(host):
+    if host == None:
+        ip='localhost'
+        return ip
+    else:
+        print(host)
+        p=redismessage.objects.values('password').get(host=host)
+        passw=p.get('password')
+        print(passw)
+        return passw
 def test(request,jieguo):
     pass
     return render(request, 'manager_redis/test.html',{'jieguo': jieguo})
