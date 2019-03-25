@@ -150,6 +150,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CRONJOBS = [
-    ('*/5 * * * *','cmdb.cron.test'),
-    ('*/5 * * * *','cmdb.cron.monitor_url')
+    #('*/5 * * * *','cmdb.cron.test'),
+    ('*/5 * * * *','cmdb.cron.monitor_url'),
+    ('*/1 * * * *','cmdb.cron.dubbo_mon')
 ]

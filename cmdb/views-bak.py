@@ -12,7 +12,6 @@ import requests
 from django.db.models import Q
 from queue import Queue
 
-
 rabbithost='172.22.0.69'
 username='admin'
 passwd='ablejava'
@@ -100,65 +99,50 @@ class MyThread(threading.Thread):
                 print('重启服务后')
 
                 for tt in range(20):
-                    #print(tt)
-                    print('请求检测url前')
+                    print(tt)
                     try:
-                        if sigle['service_name'] != 'online2c':
-                            r = requests.get(service_info[service]['url'], timeout=0.5)
+                        print('请求检测url前')
+                        print(service_info[service].get('Action'))
+                        print(service_info[service]['url'])
+                        if service_info[service].get('Action'):
+                            r = requests.post(service_info[service]['url'], timeout=0.5)
                         else:
-                            r = requests.head(service_info[service]['url'], timeout=0.5)
-                    except Exception as e:
-                            print(e)
-                            time.sleep(7)
-                            print('调用服务失败,等待7秒后发起下一次调用')
-                            print('请求失败出现异常')
-                            if tt == 12:
-                                print('12次还没有成功')
-                                if action == 'update':
-                                    arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                                 user='update', cmd='succ',
-                                                 stdout=i + ' ' + num + ' ' + service + ' 服务启动失败')
-                                    arecord.save()
-                                else:
-                                    arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                                 user='reboot', cmd='succ',
-                                                 stdout=i + ' ' + num + ' ' + service + ' 服务启动失败')
-                            continue
-
-                    if r.status_code in [200,302]:
-                        if service_info[service]['conf']:
-                            newtasks('/etc/ansible/nginx-hosts', '172.17.0.63',
+                            r = requests.get(service_info[service]['url'], timeout=0.5)
+                        print('请求检测后 + 状态码:'+ str(r.status_code))
+                        if r.status_code in [200,302]:
+                            if service_info[service]['conf']:
+                                newtasks('/etc/ansible/nginx-hosts', '172.17.0.63',
                                          "sed -i '/" + i + "/s!#!!1' /usr/local/nginx/conf/conf.d/" +
                                          service_info[service]['conf'])
-                            newtasks('/etc/ansible/nginx-hosts', '172.17.0.63',
+                                newtasks('/etc/ansible/nginx-hosts', '172.17.0.63',
                                          '/usr/local/nginx/sbin/nginx -s reload')
-                            print('打开文件注释')
-                            newtasks('/etc/ansible/other-hosts', 'all', 'sh /root/shell/rsync-nginx.sh')
-                        if action == 'update':
-                            arecord=record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),user='update',cmd='succ',stdout=i+' '+num+' '+service)
-                            arecord.save()
-                        else:
-                            arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                print('打开文件注释')
+                                newtasks('/etc/ansible/other-hosts', 'all', 'sh /root/shell/rsync-nginx.sh')
+                            if action == 'update':
+                                arecord=record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),user='update',cmd='succ',
+                                               stdout=i+' '+num+' '+service)
+                                arecord.save()
+                            else:
+                                arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                                                  user='reboot', cmd='succ',
                                                  stdout=i + ' ' + num + ' ' + service)
-                            arecord.save()
-                        print("服务判断启动成功")
-                        break
-                    elif tt == 19:
-                        print(tt)
-                        print('19次还没有成功')
-                        if action == 'update':
-                            arecord=record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),user='update',cmd='succ',
+                                arecord.save()
+                            print("服务判断启动成功")
+                            break
+                        elif tt == 19:
+                            print('19次还没有成功')
+                            if action == 'update':
+                                arecord=record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),user='update',cmd='succ',
                                                stdout=i+' '+num+' '+service+' 服务启动失败')
-                            arecord.save()
-                        else:
-                            arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                arecord.save()
+                            else:
+                                arecord = record(date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                                                  user='reboot', cmd='succ',
                                                  stdout=i + ' ' + num + ' ' + service+' 服务启动失败')
-                    # except:
-                    #     print('异常区')
-                    #     print('调用服务失败,等待7秒后发起下一次调用')
-                    #     time.sleep(7)
+                    except:
+                        print('异常区')
+                        print('调用服务失败,等待7秒后发起下一次调用')
+                        time.sleep(7)
 
             if service_info[service]['conf']:
                 info = screen()

@@ -2,14 +2,22 @@ import requests
 import datetime
 import json
 import requests
+from requests_html import HTML
 import smtplib
+import redis
 from .models import urlinfo
 from influxdb import InfluxDBClient
 from email.header import Header
 from email.mime.text import MIMEText
-mail_list = ['wangyue2@able-elec.com']
-s=smtplib.SMTP_SSL('smtp.exmail.qq.com',465)
-s.login('service8@zhihuishu.com','able1314')
+import rdbtools
+import elasticsearch
+mail_list = ['wangyue2@able-elec.com','jikaiyuan@able-elec.com','huangming@able-elec.com','chenzhiyuan@able-elec.com','guozengcheng@able-elec.com','chenyongbin@able-elec.com','wuchuan@able-elec.com','zhangying@able-elec.com']
+#mail_list = ['wangyue2@able-elec.com']
+
+
+cache=redis.StrictRedis(host='r-bp18e46a96212534.redis.rds.aliyuncs.com', port=6379, password='Uccvod12345', db=0)
+
+
 
 def test():
     print('testone')
@@ -22,20 +30,90 @@ def insert_influxdb(project,manager,url,urldesc,data,code,rtime):
 
 
 def monitor_url():
+    s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+    s.login('service8@zhihuishu.com', 'able1314')
     a=urlinfo.objects.all()
     for i in a:
-        r=requests.get(i.url)
-        rtime=r.elapsed.total_seconds()#秒
-        print(rtime)
-        if r.status_code in [200,302]:
-            insert_influxdb(i.project,i.manager,i.url,i.urlinfo,r.text[:100],r.status_code,rtime)
-        else:
-            msg = MIMEText('调用uri:'+r.url,',接口描述:'+i.urlinfo,',返回数据:'+r.text,',status:'+str(r.status_code),',负责人:'+i.manager)
-            msg['Subject'] = "监控{}项目接口-失败状态".format(i.project)
-            s.sendmail('service8@zhihuishu.com',mail_list,msg.as_string())
-            insert_influxdb(i.project, i.manager, i.url, i.urlinfo, r.text[:100], r.status_code,r.elapsed.microseconds/(1000*1000))
-            print('链接有问题,将给大家发送邮件.')
+        try:
+            #r=requests.get(i.url,timeout=2)
+            r = requests.get(i.url,timeout=2)
+            rtime=r.elapsed.total_seconds()#秒
+            #print(i.url,rtime)
+            if r.status_code in [200,302]:
+                insert_influxdb(i.project,i.manager,i.url,i.urlinfo,r.text[:100],r.status_code,rtime)
+            else:
+                msg = MIMEText('调用uri:'+r.url+' '+','+'接口描述:'+i.urlinfo+',返回数据:'+r.text+',status:'+str(r.status_code)+',负责人:'+i.manager)
+                msg['Subject'] = "监控{}项目接口-失败状态".format(i.project)
+                msg['From'] = 'service8@zhihuishu.com'
+                msg['To'] = ','.join(mail_list)
+                s.sendmail('service8@zhihuishu.com',mail_list,msg.as_string())
+                insert_influxdb(i.project, i.manager, i.url, i.urlinfo, r.text[:100], r.status_code,r.elapsed.microseconds/(1000*1000))
+                #print('链接有问题,将给大家发送邮件.')
+        except:
+            msg = MIMEText('调用uri:' + i.url+ ',接口描述:' + i.urlinfo+ ',status:' + '访问异常 ,负责人:' + i.manager)
+            msg['Subject'] = "监控{}项目接口-访问超时状态".format(i.project)
+            msg['From'] = 'service8@zhihuishu.com'
+            msg['To'] = ','.join(mail_list)
+            s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
+            #print('链接有问题,将给大家发送邮件.')
+            #print(i.url)
+            #print('有问题的url')
 
+
+def dubbo_mon():
+    r = requests.get('http://172.22.0.65:8080/services.html', timeout=2)
+    html = HTML(html=r.text)
+    tbody = html.find('tbody')[1]
+    tr = tbody.find('tr')
+    problem = []
+    for i in tr:
+        service = i.text.split('\n')[0]
+        # print(service)
+        try:
+            rr = requests.get('http://172.22.0.65:8080/statistics.html?service=' + service, timeout=10)
+        except Exception as e:
+            #print(e)
+            #print(service + '--has problem')
+            #problem.append(service)
+            pass
+        html1 = HTML(html=rr.text)
+        if len(html1.find('tbody')) >= 2:
+            tbody1 = html1.find('tbody')[1]
+            tr1 = tbody1.find('tr')
+            # print(tbody1.text)
+            total = 0
+            for l in tr1:
+                total += int(l.find('td')[2].text.split('-->')[0]) + int(l.find('td')[2].text.split('-->')[1])
+            else:
+                #info=cache.get(service).decode()
+                if cache.get(service):
+                    if total != 0:
+                        #print(service,total,cache.get(service).decode())
+                        if total - int(cache.get(service).decode()) > 200:
+                        #print('每5分钟失败100次')
+                            if service == 'com.zhihuishu.qa.openapi.qaweb.QaWebQuestionOpenService':
+                                cache.set(service, total)
+                            else:
+                                problem.append({'name':service,'5分钟前失败次数':cache.get(service).decode(),'现在失败次数:':str(total)})
+                                cache.set(service, total)
+                        else:
+                            cache.set(service, total)
+                else:
+                    cache.set(service, total)
+                #print(service, total)
+    else:
+        # print('=============================')
+        # print('=============================')
+        # print('=============================')
+        if len(problem) > 0:
+            s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+            s.login('service8@zhihuishu.com', 'able1314')
+            msg = MIMEText(str(problem))
+            msg['Subject'] = "监控dubbo接口失败状态-5分钟失败超过200次"
+            msg['From']='service8@zhihuishu.com'
+            msg['To']=','.join(mail_list)
+            s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
+        # print(problem)
 
 
 
