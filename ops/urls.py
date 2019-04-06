@@ -22,4 +22,5 @@ urlpatterns = [
     path('cmdb/',include('cmdb.urls',namespace='cmdb')),
     path('monitor/',include('monitor.urls',namespace='monitor')),
     path('accounts/',include('allauth.urls')),
+    path('manager_redis/',include('manager_redis.urls',namespace='manager_redis')),
 ]

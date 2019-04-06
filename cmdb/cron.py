@@ -9,9 +9,12 @@ from .models import urlinfo
 from influxdb import InfluxDBClient
 from email.header import Header
 from email.mime.text import MIMEText
+from concurrent import futures
+
 import rdbtools
 import elasticsearch
-mail_list = ['wangyue2@able-elec.com','jikaiyuan@able-elec.com','huangming@able-elec.com','chenzhiyuan@able-elec.com','guozengcheng@able-elec.com','chenyongbin@able-elec.com','wuchuan@able-elec.com','zhangying@able-elec.com']
+mail_list = ['wangyue2@able-elec.com','jikaiyuan@able-elec.com','huangming@able-elec.com','chenzhiyuan@able-elec.com','guozengcheng@able-elec.com','chenyongbin@able-elec.com','wuchuan@able-elec.com','zhangying445@163.com']
+#mail_list = ['wangyue2@able-elec.com','330884795@qq.com']
 #mail_list = ['wangyue2@able-elec.com']
 
 
@@ -60,70 +63,155 @@ def monitor_url():
             #print('有问题的url')
 
 
-def dubbo_mon():
+# def dubbo_mon():
+#     r = requests.get('http://172.22.0.65:8080/services.html', timeout=2)
+#     html = HTML(html=r.text)
+#     tbody = html.find('tbody')[1]
+#     tr = tbody.find('tr')
+#     problem = []
+#     for i in tr:
+#         service = i.text.split('\n')[0]
+#         # print(service)
+#         try:
+#             rr = requests.get('http://172.22.0.65:8080/statistics.html?service=' + service, timeout=10)
+#         except Exception as e:
+#             #print(e)
+#             #print(service + '--has problem')
+#             #problem.append(service)
+#             pass
+#         html1 = HTML(html=rr.text)
+#         if len(html1.find('tbody')) >= 2:
+#             tbody1 = html1.find('tbody')[1]
+#             tr1 = tbody1.find('tr')
+#             # print(tbody1.text)
+#             total = 0
+#             for l in tr1:
+#                 total += int(l.find('td')[2].text.split('-->')[0]) + int(l.find('td')[2].text.split('-->')[1])
+#             else:
+#                 #info=cache.get(service).decode()
+#                 if cache.get(service):
+#                     if total != 0:
+#                         #print(service,total,cache.get(service).decode())
+#                         if total - int(cache.get(service).decode()) > 200:
+#                         #print('每5分钟失败100次')
+#                             if service == 'com.zhihuishu.qa.openapi.qaweb.QaWebQuestionOpenService':
+#                                 cache.set(service, total)
+#                             else:
+#                                 problem.append({'name':service,'5分钟前失败次数':cache.get(service).decode(),'现在失败次数:':str(total)})
+#                                 cache.set(service, total)
+#                         else:
+#                             cache.set(service, total)
+#                 else:
+#                     cache.set(service, total)
+#                 #print(service, total)
+#     else:
+#         # print('=============================')
+#         # print('=============================')
+#         # print('=============================')
+#         if len(problem) > 0:
+#             s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+#             s.login('service8@zhihuishu.com', 'able1314')
+#             msg = MIMEText(str(problem))
+#             msg['Subject'] = "监控dubbo接口失败状态-5分钟失败超过200次"
+#             msg['From']='service8@zhihuishu.com'
+#             msg['To']=','.join(mail_list)
+#             s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
+        # print(problem)
+
+
+def return_service_list():
     r = requests.get('http://172.22.0.65:8080/services.html', timeout=2)
     html = HTML(html=r.text)
     tbody = html.find('tbody')[1]
     tr = tbody.find('tr')
-    problem = []
-    for i in tr:
-        service = i.text.split('\n')[0]
-        # print(service)
-        try:
-            rr = requests.get('http://172.22.0.65:8080/statistics.html?service=' + service, timeout=10)
-        except Exception as e:
-            #print(e)
-            #print(service + '--has problem')
-            #problem.append(service)
-            pass
+    trd = [i.text.split('\n')[0] for i in tr]
+    #print(trd)
+    trd.remove('com.zhihuishu.qa.openapi.qaweb.QaWebQuestionOpenService')
+    return trd
+
+def check_num(service):
+    try:
+        rr = requests.get('http://172.22.0.65:8080/statistics.html?service=' + service,timeout=10)
+    except Exception as e:
+        print(e,service)
+        rr = False
+    if rr:
         html1 = HTML(html=rr.text)
         if len(html1.find('tbody')) >= 2:
             tbody1 = html1.find('tbody')[1]
             tr1 = tbody1.find('tr')
-            # print(tbody1.text)
             total = 0
             for l in tr1:
                 total += int(l.find('td')[2].text.split('-->')[0]) + int(l.find('td')[2].text.split('-->')[1])
             else:
-                #info=cache.get(service).decode()
+                #print('接口名字:{},失败次数:{}'.format(service,total))
                 if cache.get(service):
                     if total != 0:
-                        #print(service,total,cache.get(service).decode())
                         if total - int(cache.get(service).decode()) > 200:
-                        #print('每5分钟失败100次')
-                            if service == 'com.zhihuishu.qa.openapi.qaweb.QaWebQuestionOpenService':
-                                cache.set(service, total)
-                            else:
-                                problem.append({'name':service,'5分钟前失败次数':cache.get(service).decode(),'现在失败次数:':str(total)})
-                                cache.set(service, total)
+                            #problem.append({'name':service,'5分钟前失败次数':cache.get(service).decode(),'现在失败次数:':str(total)})
+                            num=cache.get(service).decode()
+                            cache.set(service, total)
+                            print(num,total,service)
+                            print({'name':service,'5分钟前失败次数':num,'现在失败次数:':str(total)})
+                            return {'name':service,'5分钟前失败次数':num,'现在失败次数:':str(total)}
                         else:
                             cache.set(service, total)
+                    else:
+                        cache.set(service, 0)
                 else:
                     cache.set(service, total)
-                #print(service, total)
-    else:
-        # print('=============================')
-        # print('=============================')
-        # print('=============================')
-        if len(problem) > 0:
-            s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
-            s.login('service8@zhihuishu.com', 'able1314')
-            msg = MIMEText(str(problem))
-            msg['Subject'] = "监控dubbo接口失败状态-5分钟失败超过200次"
-            msg['From']='service8@zhihuishu.com'
-            msg['To']=','.join(mail_list)
-            s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
-        # print(problem)
 
 
+def dubbo_mon():
+    with futures.ThreadPoolExecutor(20) as ex:
+        res = ex.map(check_num, return_service_list())
 
+    comment = list(res)
+    # comment.remove('com.zhihuishu.qa.openapi.qaweb.QaWebQuestionOpenService')
+    for i in range(comment.count(None)):
+        comment.remove(None)
 
-
-
-
+    if len(comment) > 0:
+        s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+        s.login('service8@zhihuishu.com', 'able1314')
+        msg = MIMEText(str(comment))
+        msg['Subject'] = "监控dubbo接口失败状态-5分钟失败超过200次"
+        msg['From'] = 'service8@zhihuishu.com'
+        msg['To'] = ','.join(mail_list)
+        print('send mail before')
+        s.sendmail('service8@zhihuishu.com',mail_list, msg.as_string())
 
 # print(r.url,r.text[:100],r.status_code)
 
+
+def slow_url():
+    req_data = {  "size": 3,
+  "query": {
+    "term": {
+      "hostname.keyword": "online.zhihuishu.com"
+      }
+    },
+    "aggs": {
+      "myaggs": {
+        "range": {
+          "field": "timestamp",
+          "ranges": [
+            {
+              "from": "now-10m",
+              "to": "now"
+            }
+          ]
+        },
+        "aggs": {
+          "avgreq": {
+            "avg": {
+              "field": "request_time"
+            }
+          }
+        }
+        }
+      }
+    }
 
 
 
