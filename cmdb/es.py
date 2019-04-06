@@ -76,6 +76,8 @@ def requests_time(hostname):
     if req_time > 1:
         print(req_time,req_from_time,req_to_time)
 
+    return [hostname,req_time,req_from_time,req_to_time]
+
 
 
 
@@ -112,5 +114,5 @@ def slow_uri():
 
     respone_data = r.json()['aggregations']['testaggs']['hits']['hits']
     split_date = [{i["_source"]["requestUri"]:i["_source"]["request_time"]}for i in respone_data]
-    print(split_date)
+    return split_date
 

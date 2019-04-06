@@ -10,7 +10,7 @@ from influxdb import InfluxDBClient
 from email.header import Header
 from email.mime.text import MIMEText
 from concurrent import futures
-
+from .es import requests_time,slow_uri
 import rdbtools
 import elasticsearch
 mail_list = ['wangyue2@able-elec.com','jikaiyuan@able-elec.com','huangming@able-elec.com','chenzhiyuan@able-elec.com','guozengcheng@able-elec.com','chenyongbin@able-elec.com','wuchuan@able-elec.com','zhangying445@163.com']
@@ -133,7 +133,7 @@ def check_num(service):
     try:
         rr = requests.get('http://172.22.0.65:8080/statistics.html?service=' + service,timeout=10)
     except Exception as e:
-        print(e,service)
+        #print(e,service)
         rr = False
     if rr:
         html1 = HTML(html=rr.text)
@@ -151,8 +151,8 @@ def check_num(service):
                             #problem.append({'name':service,'5分钟前失败次数':cache.get(service).decode(),'现在失败次数:':str(total)})
                             num=cache.get(service).decode()
                             cache.set(service, total)
-                            print(num,total,service)
-                            print({'name':service,'5分钟前失败次数':num,'现在失败次数:':str(total)})
+                            #print(num,total,service)
+                            #print({'name':service,'5分钟前失败次数':num,'现在失败次数:':str(total)})
                             return {'name':service,'5分钟前失败次数':num,'现在失败次数:':str(total)}
                         else:
                             cache.set(service, total)
@@ -178,40 +178,50 @@ def dubbo_mon():
         msg['Subject'] = "监控dubbo接口失败状态-5分钟失败超过200次"
         msg['From'] = 'service8@zhihuishu.com'
         msg['To'] = ','.join(mail_list)
-        print('send mail before')
+        #print('send mail before')
         s.sendmail('service8@zhihuishu.com',mail_list, msg.as_string())
 
 # print(r.url,r.text[:100],r.status_code)
 
 
-def slow_url():
-    req_data = {  "size": 3,
-  "query": {
-    "term": {
-      "hostname.keyword": "online.zhihuishu.com"
-      }
-    },
-    "aggs": {
-      "myaggs": {
-        "range": {
-          "field": "timestamp",
-          "ranges": [
-            {
-              "from": "now-10m",
-              "to": "now"
-            }
-          ]
-        },
-        "aggs": {
-          "avgreq": {
-            "avg": {
-              "field": "request_time"
-            }
-          }
-        }
-        }
-      }
-    }
+def get_request_time():
+    hostname=['all','online.zhihuishu.com','exam.zhihuishu.com','studentexam.zhihuishu.com','newexam.zhihuishu.com',
+              'hike.zhihuishu.com','wenda.zhihuishu.com','user.zhihuishu.com','passport.zhihuishu.com','study.zhihuishu.com',
+              'b2cpush.zhihuishu.com','appstudent.zhihuishu.com','appstudent2c.zhihuishu.com','myuni.zhihuishu.com']
+    with futures.ThreadPoolExecutor(14) as ex:
+        res = ex.map(requests_time, hostname)
+
+    comment = list(res)
+    #print(comment)
+    senddata = ['域名:{},平均响应时间:{},时间范围(时区问题+8小时):{}'.format(i[0],i[1],i[2]+'--'+i[3]) for i in comment if i[1] > 1]
+    s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+    s.login('service8@zhihuishu.com', 'able1314')
+    msg = MIMEText('<br>'.join(senddata))
+    msg['Subject'] = "监控线上域名服务响应时间-10分钟内平均时间大于1秒"
+    msg['From'] = 'service8@zhihuishu.com'
+    msg['To'] = ','.join(mail_list)
+    msg['Content-Type'] = "text/html"
+    #print('send mail before')
+    s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
+
+
+
+
+
+def ger_slow_uri():
+    a=slow_uri()
+    #print(a)
+    comment =[str(i).split('{')[1].split('}')[0]+'<br>' for i in a]
+    s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+    s.login('service8@zhihuishu.com', 'able1314')
+    msg = MIMEText(' '.join(comment))
+    msg['Subject'] = "每天域名服务响应最慢的20个uri统计"
+    msg['From'] = 'service8@zhihuishu.com'
+    msg['To'] = ','.join(mail_list)
+    msg['Content-Type']="text/html"
+    #print('send mail before')
+    s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
+
 
 
 

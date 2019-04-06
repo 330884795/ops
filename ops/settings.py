@@ -150,8 +150,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+
+
+#/root/anaconda3/bin/python manage.py crontab list
+#/root/anaconda3/bin/python manage.py crontab -h
+#/root/anaconda3/bin/python manage.py crontab show
+#/root/anaconda3/bin/python manage.py crontab add
 CRONJOBS = [
     #('*/5 * * * *','cmdb.cron.test'),
     ('*/5 * * * *','cmdb.cron.monitor_url'),
-    ('*/1 * * * *','cmdb.cron.dubbo_mon')
+    ('*/1 * * * *','cmdb.cron.dubbo_mon'),
+    ('01 * * * *','cmdb.cron.get_request_time'),
+    ('59 23 * * *','cmdb.cron.ger_slow_uri')
 ]
