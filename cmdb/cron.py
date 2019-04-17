@@ -187,22 +187,24 @@ def dubbo_mon():
 def get_request_time():
     hostname=['all','online.zhihuishu.com','exam.zhihuishu.com','studentexam.zhihuishu.com','newexam.zhihuishu.com',
               'hike.zhihuishu.com','wenda.zhihuishu.com','user.zhihuishu.com','passport.zhihuishu.com','study.zhihuishu.com',
-              'b2cpush.zhihuishu.com','appstudent.zhihuishu.com','appstudent2c.zhihuishu.com','myuni.zhihuishu.com']
+              'b2cpush.zhihuishu.com','appstudent.zhihuishu.com','appstudent2c.zhihuishu.com','myuni.zhihuishu.com','appcomm-user.zhihuishu.com','appcomm-live.zhihuishu.com']
     with futures.ThreadPoolExecutor(14) as ex:
         res = ex.map(requests_time, hostname)
 
     comment = list(res)
     #print(comment)
-    senddata = ['域名:{},平均响应时间:{},时间范围(时区问题+8小时):{}'.format(i[0],i[1],i[2]+'--'+i[3]) for i in comment if i[1] > 1]
-    s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
-    s.login('service8@zhihuishu.com', 'able1314')
-    msg = MIMEText('<br>'.join(senddata))
-    msg['Subject'] = "监控线上域名服务响应时间-10分钟内平均时间大于1秒"
-    msg['From'] = 'service8@zhihuishu.com'
-    msg['To'] = ','.join(mail_list)
-    msg['Content-Type'] = "text/html"
-    #print('send mail before')
-    s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
+    senddata = ['域名:{},平均响应时间:{}s,时间范围(时区问题+8小时):{}'.format(i[0],i[1],i[2]+'--'+i[3]) for i in comment if i[1] >= 1]
+    # print(senddata)
+    if len(senddata) > 1:
+        s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
+        s.login('service8@zhihuishu.com', 'able1314')
+        msg = MIMEText('<br>'.join(senddata))
+        msg['Subject'] = "监控线上域名服务响应时间-5分钟内平均响应时间大于1秒"
+        msg['From'] = 'service8@zhihuishu.com'
+        msg['To'] = ','.join(mail_list)
+        msg['Content-Type'] = "text/html"
+        #print('send mail before')
+        s.sendmail('service8@zhihuishu.com', mail_list, msg.as_string())
 
 
 
@@ -211,7 +213,7 @@ def get_request_time():
 def ger_slow_uri():
     a=slow_uri()
     #print(a)
-    comment =[str(i).split('{')[1].split('}')[0]+'<br>' for i in a]
+    comment =[str(i).split('{')[1].split('}')[0]+'s<br>' for i in a]
     s = smtplib.SMTP_SSL('smtp.exmail.qq.com', 465)
     s.login('service8@zhihuishu.com', 'able1314')
     msg = MIMEText(' '.join(comment))

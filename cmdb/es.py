@@ -18,7 +18,7 @@ def requests_time(hostname):
           "field": "timestamp",
           "ranges": [
             {
-              "from": "now-10m",
+              "from": "now-5m",
               "to": "now"
             }
           ]
@@ -45,7 +45,7 @@ def requests_time(hostname):
         "field": "timestamp",
         "ranges": [
           {
-            "from": "now-10m",
+            "from": "now-5m",
             "to": "now"
           }
         ]
@@ -93,7 +93,10 @@ def slow_uri():
         }},
         {"match": {
           "requestUri": "/able-commons//upload/receiver"
-        }}
+        }},
+          {"match": {
+              "requestUri": "file.zhihuishu.com"
+          }}
       ]
     }
   },
@@ -101,7 +104,7 @@ def slow_uri():
     "testaggs":{
       "top_hits": {
         "size": 20,
-        "_source": {"includes": ["requestUri","request_time"]}
+        "_source": {"includes": ["hostname","requestUri","request_time"]}
         , "sort": [{"request_time": {"order": "desc"}}]
 
       }
@@ -115,4 +118,45 @@ def slow_uri():
     respone_data = r.json()['aggregations']['testaggs']['hits']['hits']
     split_date = [{i["_source"]["requestUri"]:i["_source"]["request_time"]}for i in respone_data]
     return split_date
+
+
+def show_hostname_slow_uri(hostname):
+    now = datetime.datetime.now().strftime('%Y.%m.%d')
+    aday = datetime.timedelta(days=1)
+    yesterday = (now - aday).strftime('%Y.%m.%d')
+    headers = {'Content-Type': 'application/json'}
+    info={
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {
+          "hostname": hostname
+        }}
+      ],
+      "must_not": [
+        {"match": {
+          "requestUri": "/aidedteaching/file/downloadFile"
+        }}
+      ]
+    }
+  },
+  "sort": [
+    {
+      "request_time": {
+        "order": "desc"
+      }
+    }
+  ],
+  "_source": ["requestUri","request_time"]
+  , "size": 5
+}
+    sub_data = json.dumps(info)
+    r = requests.post('http://172.19.103.161:9200/nginx_access-' + yesterday + '/doc/_search?', headers=headers,
+                      data=sub_data)
+    respone_data = [str(i['_source']['request_time']) + ':' + i['_source']['requestUri'] for i in r.json()['hits']['hits']]
+
+    return respone_data
+
+
+
 

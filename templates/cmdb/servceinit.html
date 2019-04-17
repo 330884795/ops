@@ -17,26 +17,27 @@
                 <div class="form-check">
 
                 <template v-for="cc in jdkdata">
-
-                <label class="form-check-label" v-html="cc.value"> </label>&nbsp&nbsp&nbsp&nbsp&nbsp
-                    <input class="form-check-input" type="checkbox"  v-model="cc.checked"  name="chename" v-bind:value="cc.value" v-html="cc.value">
+                    <input class="form-check-input" type="checkbox" v-bind:id="cc.value" v-model="cc.checked"  name="chename" v-bind:value="cc.value" v-html="cc.value">
+                    <label class="form-check-label" v-bind:for="cc.value" v-html="cc.value"> </label>&nbsp&nbsp&nbsp&nbsp&nbsp
                 </template>
                     </div>
                 <div class="form-check">
 
                 <template v-for="cc in tomcatdata">
 
-                <label class="form-check-label" v-html="cc.value"> </label>&nbsp&nbsp&nbsp&nbsp&nbsp
-                    <input class="form-check-input" type="checkbox"  v-model="cc.checked"  name="chename" v-bind:value="cc.value" v-html="cc.value">
+
+                    <input class="form-check-input" type="checkbox" v-bind:id="cc.value" v-model="cc.checked"  name="chename" v-bind:value="cc.value" v-html="cc.value">
+                    <label class="form-check-label" v-bind:for="cc.value" v-html="cc.value"> </label>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
                 </template>
                     </div>
-                <br>
+
                 <div class="form-check">
-                <p >根据项目克隆</p>
+                <!--<p >根据项目克隆</p>  <br> -->
                 <template v-for="cc in toolsdata">
 
-                <label class="form-check-label" v-html="cc.value"> </label>&nbsp&nbsp&nbsp&nbsp&nbsp
-                    <input class="form-check-input" type="checkbox"  v-model="cc.checked"  name="chename" v-bind:value="cc.value" v-html="cc.value">
+
+                    <input class="form-check-input" type="checkbox" v-bind:id="cc.value"  v-model="cc.checked"  name="chename" v-bind:value="cc.value" v-html="cc.value">
+                    <label class="form-check-label" v-bind:for="cc.value" v-html="cc.value"> </label>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 
                 </template>
                     </div>
@@ -70,9 +71,9 @@
       var b = new Vue({
           el:'#checkboxqq',
           data:{
-              jdkdata:[{checked:true,'value':'jdk6'},{checked:true,'value':'jdk7'},{checked:true,'value':'jdk8'}],
-              tomcatdata:[{checked:true,'value':'tomcat6'},{checked:true,'value':'tomcat7'},{checked:true,'value':'tomcat8'}],
-              toolsdata:[{checked:true,'value':'onlineschool'},{checked:true,'value':'exam'},{checked:true,'value':'studentexam'},{checked:true,'value':'teacherexam'}],
+              jdkdata:[{checked:false,'value':'jdk6'},{checked:false,'value':'jdk7'},{checked:false,'value':'jdk8'}],
+              tomcatdata:[{checked:false,'value':'tomcat6'},{checked:false,'value':'tomcat7'},{checked:false,'value':'tomcat8'},{checked:false,'value':'jboss6jdk6'}],
+              toolsdata:[{checked:false,'value':'onlineschool'},{checked:false,'value':'exam'},{checked:false,'value':'studentexam'},{checked:false,'value':'teacherexam'}],
               content:null
           },
 
